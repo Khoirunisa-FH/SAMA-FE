@@ -11,7 +11,7 @@ const ProtectedRoute = ({
   const { token, role } =
     useAuthStore();
 
-  // Belum login
+  // 1. Cek apakah pengguna sudah memiliki token login
   if (!token) {
     return (
       <Navigate
@@ -21,21 +21,28 @@ const ProtectedRoute = ({
     );
   }
 
-  // Role tidak sesuai
-  if (
-    allowedRoles &&
-    !allowedRoles.includes(
-      role?.toLowerCase()
-    )
-  ) {
-    return (
-      <Navigate
-        to="/dashboard"
-        replace
-      />
+  // 2. Cek apakah rute meminta hak akses role tertentu
+  if (allowedRoles) {
+    // Bersihkan string role pengguna (jadikan lowercase dan hapus spasi di ujung)
+    const userRoleCleaned = role?.toLowerCase().trim();
+
+    // Periksa apakah role pengguna ada di dalam daftar allowedRoles
+    const hasAccess = allowedRoles.some(
+      (allowed) => allowed.toLowerCase().trim() === userRoleCleaned
     );
+
+    // Jika role tidak sesuai, buang kembali ke login (memutus infinite loop)
+    if (!hasAccess) {
+      return (
+        <Navigate
+          to="/login"
+          replace
+        />
+      );
+    }
   }
 
+  // Jika lolos semua pemeriksaan keamanan, tampilkan halaman yang dituju
   return <Outlet />;
 };
 

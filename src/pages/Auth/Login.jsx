@@ -1,15 +1,22 @@
 import { useState } from 'react';
+
 import {
   Eye,
   EyeOff,
-  ShieldCheck,
   LockKeyhole,
   User2,
+  ShieldCheck,
 } from 'lucide-react';
+
 import { motion } from 'framer-motion';
+
 import { useNavigate } from 'react-router-dom';
+
 import axios from 'axios';
+
 import useAuthStore from '../../store/useAuthStore';
+
+import LoginIllustration from '../../assets/login.svg';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,8 +36,9 @@ export default function Login() {
 
   const [error, setError] =
     useState('');
-  
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [isLoading, setIsLoading] =
+    useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -41,49 +49,67 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     setError('');
     setIsLoading(true);
 
     try {
-      // Hit endpoint login ke backend SAMA-BANTEN
-      const response = await axios.post('http://103.179.219.48:8765/login', {
-        username: formData.username,
-        password: formData.password
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        'http://103.179.219.48:8765/login',
+        {
+          username: formData.username,
+          password: formData.password,
         }
-      });
+      );
 
-      // Ekstraksi data token, role, dan nama dari response backend
-      const token = response.data.token || response.data.data?.token;
-      const userRole = response.data.role || response.data.data?.role;
-      const userName = response.data.nama || response.data.data?.nama || 'User SAMA';
+      const token =
+        response.data.token ||
+        response.data.data?.token;
+
+      const role =
+        response.data.role ||
+        response.data.data?.role ||
+        'operator';
+
+      const name =
+        response.data.nama ||
+        response.data.data?.nama ||
+        'User';
 
       if (token) {
-        const finalRole = userRole || 'operator';
-
-        // 1. Amankan data ke localStorage dengan key yang sinkron dengan useAuthStore
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', finalRole);
-
-        // 2. Perbarui State Global Zustand agar Router Guard/Dashboard ter-load sempurna
-        setAuth(
-          { name: userName, username: formData.username }, // Data user object
-          token,                                           // JWT token string
-          finalRole                                        // User role string
+        localStorage.setItem(
+          'token',
+          token
         );
 
-        // 3. Alihkan halaman langsung ke Dashboard yang sekarang sudah terotorisasi
+        localStorage.setItem(
+          'role',
+          role
+        );
+
+        setAuth(
+          {
+            name,
+            username:
+              formData.username,
+          },
+          token,
+          role
+        );
+
         navigate('/dashboard');
       } else {
-        setError('Login berhasil, namun token tidak ditemukan dari respon server.');
+        setError(
+          'Token tidak ditemukan.'
+        );
       }
-
     } catch (err) {
-      console.error("Error Login:", err);
-      const serverMessage = err.response?.data?.message || err.response?.data?.error;
-      setError(serverMessage || 'Username atau password salah atau server bermasalah.');
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+          'Username atau password salah.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -92,59 +118,22 @@ export default function Login() {
   return (
     <div
       className="
-        relative
         min-h-screen
-        overflow-hidden
-        bg-[#071739]
-        flex items-center justify-center
-        px-4
+        bg-gradient-to-br
+        from-slate-100
+        via-slate-50
+        to-slate-200
+        flex
+        items-center
+        justify-center
+        p-6
       "
     >
-      {/* Background Glow */}
-      <div
-        className="
-          absolute
-          top-[-120px]
-          left-[-120px]
-          w-[380px]
-          h-[380px]
-          rounded-full
-          bg-cyan-400/10
-          blur-3xl
-        "
-      />
-
-      <div
-        className="
-          absolute
-          bottom-[-140px]
-          right-[-100px]
-          w-[340px]
-          h-[340px]
-          rounded-full
-          bg-teal-400/10
-          blur-3xl
-        "
-      />
-
-      {/* Grid Pattern */}
-      <div
-        className="
-          absolute inset-0
-          opacity-[0.03]
-        "
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-        }}
-      />
-
-      {/* Login Card */}
+      {/* MAIN CARD */}
       <motion.div
         initial={{
           opacity: 0,
-          y: 40,
+          y: 20,
         }}
         animate={{
           opacity: 1,
@@ -154,288 +143,443 @@ export default function Login() {
           duration: 0.5,
         }}
         className="
-          relative z-10
-          w-full max-w-md
-          rounded-[36px]
-          border border-white/10
-          bg-white/10
-          backdrop-blur-2xl
-          shadow-[0_20px_80px_rgba(0,0,0,0.45)]
-          p-8 lg:p-10
+          relative
+          w-full
+          max-w-7xl
+          min-h-[720px]
+          rounded-[42px]
+          overflow-hidden
+          shadow-2xl
+          border border-white/50
+          bg-white
+          grid
+          grid-cols-1
+          lg:grid-cols-[58%_42%]
         "
       >
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <motion.div
-            whileHover={{
-              scale: 1.03,
-            }}
+        {/* LEFT SIDE */}
+        <div className="relative overflow-hidden">
+          {/* BG IMAGE */}
+          <img
+            src={LoginIllustration}
+            alt="Login Illustration"
             className="
-              w-24 h-24
-              rounded-[28px]
+              absolute inset-0
+              w-full h-full
+              object-cover
+            "
+          />
+
+          {/* OVERLAY */}
+          <div
+            className="
+              absolute inset-0
               bg-gradient-to-br
-              from-teal-400
-              to-cyan-500
-              flex items-center justify-center
-              mx-auto
-              shadow-2xl
-              shadow-teal-500/30
+              from-[#071739]/95
+              via-[#0B2B70]/88
+              to-[#0EA5A4]/75
             "
-          >
-            <ShieldCheck
-              size={42}
-              className="text-white"
-            />
-          </motion.div>
+          />
 
-          <h1
-            className="
-              mt-7
-              text-4xl
-              font-bold
-              tracking-wide
-              text-white
-            "
-          >
-            SAMA-BANTEN
-          </h1>
+          {/* GLOW */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-400/20 rounded-full blur-3xl" />
 
-          <p
+          {/* CONTENT */}
+          <div
             className="
-              mt-3
-              text-sm
-              leading-relaxed
-              text-slate-300
+              relative z-10
+              flex flex-col
+              justify-between
+              h-full
+              p-12
             "
           >
-            Sistem Alih Media Arsip Banten
-          </p>
+            <div>
+              {/* LOGO */}
+              <div className="flex items-center gap-4">
+                <div
+                  className="
+                    w-16 h-16
+                    rounded-3xl
+                    bg-white/10
+                    backdrop-blur-md
+                    border border-white/10
+                    flex items-center justify-center
+                  "
+                >
+                  <ShieldCheck className="text-white" />
+                </div>
+
+                <div>
+                  <h1
+                    className="
+                      text-4xl
+                      font-bold
+                      text-white
+                    "
+                  >
+                    SAMA-BANTEN
+                  </h1>
+
+                  <p
+                    className="
+                      text-cyan-100
+                      mt-1
+                    "
+                  >
+                    Sistem Alih Media Arsip
+                  </p>
+                </div>
+              </div>
+
+              {/* BADGE */}
+              <div
+                className="
+                  mt-16
+                  inline-flex
+                  items-center
+                  gap-2
+                  bg-white/10
+                  backdrop-blur-md
+                  border border-white/10
+                  px-5 py-2.5
+                  rounded-full
+                  text-sm
+                  text-white
+                "
+              >
+                Enterprise Digital Archive
+              </div>
+
+              {/* TEXT */}
+              <div className="mt-8 max-w-2xl">
+                <h2
+                  className="
+                    text-6xl
+                    font-bold
+                    leading-tight
+                    text-white
+                  "
+                >
+                  Modernisasi
+                  <br />
+                  Pengelolaan Arsip
+                  <br />
+                  Digital
+                </h2>
+
+                <p
+                  className="
+                    mt-7
+                    text-lg
+                    leading-relaxed
+                    text-cyan-100
+                    max-w-xl
+                  "
+                >
+                  Platform digital untuk proses
+                  registrasi, digitalisasi,
+                  indexing, quality control,
+                  dan repository arsip pemerintah
+                  secara modern dan terintegrasi.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Error Alert */}
-        {error && (
+        {/* RIGHT SIDE */}
+        <div
+          className="
+            flex
+            items-center
+            justify-center
+            p-8
+            lg:p-14
+            bg-white
+            relative
+          "
+        >
+          {/* GLOW */}
+          <div
+            className="
+              absolute
+              top-[-100px]
+              right-[-100px]
+              w-72 h-72
+              bg-cyan-200/30
+              rounded-full
+              blur-3xl
+            "
+          />
+
           <motion.div
             initial={{
               opacity: 0,
-              y: -10,
+              x: 20,
             }}
             animate={{
               opacity: 1,
-              y: 0,
+              x: 0,
+            }}
+            transition={{
+              duration: 0.5,
             }}
             className="
-              mb-6
-              rounded-2xl
-              border border-red-400/20
-              bg-red-500/10
-              px-4 py-3
-              text-sm
-              text-red-200
+              relative z-10
+              w-full
+              max-w-md
             "
           >
-            {error}
-          </motion.div>
-        )}
-
-        {/* Form */}
-        <form
-          onSubmit={handleLogin}
-          className="space-y-5"
-        >
-          {/* Username */}
-          <div>
-            <label
+            {/* BADGE */}
+            <div
               className="
-                mb-2 block
+                inline-flex
+                items-center
+                gap-2
+                rounded-full
+                bg-cyan-50
+                border border-cyan-100
+                px-4 py-2
                 text-sm
                 font-medium
-                text-slate-200
+                text-cyan-700
               "
             >
-              Username
-            </label>
-
-            <div className="relative">
-              <User2
-                size={18}
-                className="
-                  absolute
-                  left-4 top-1/2
-                  -translate-y-1/2
-                  text-slate-400
-                "
-              />
-
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Masukkan username"
-                className="
-                  w-full
-                  rounded-2xl
-                  border border-white/10
-                  bg-white/90
-                  py-4 pl-12 pr-4
-                  text-slate-800
-                  placeholder:text-slate-400
-                  outline-none
-                  transition-all duration-300
-                  focus:border-teal-400
-                  focus:ring-4
-                  focus:ring-teal-500/20
-                "
-                disabled={isLoading}
-                required
-              />
+              <ShieldCheck size={16} />
+              BANTEN PROVINCE SYSTEM
             </div>
-          </div>
 
-          {/* Password */}
-          <div>
-            <label
-              className="
-                mb-2 block
-                text-sm
-                font-medium
-                text-slate-200
-              "
-            >
-              Password
-            </label>
-
-            <div className="relative">
-              <LockKeyhole
-                size={18}
+            {/* TITLE */}
+            <div className="mt-8">
+              <h1
                 className="
-                  absolute
-                  left-4 top-1/2
-                  -translate-y-1/2
-                  text-slate-400
-                "
-              />
-
-              <input
-                type={
-                  showPassword
-                    ? 'text'
-                    : 'password'
-                }
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Masukkan password"
-                className="
-                  w-full
-                  rounded-2xl
-                  border border-white/10
-                  bg-white/90
-                  py-4 pl-12 pr-12
+                  text-4xl
+                  font-bold
                   text-slate-800
-                  placeholder:text-slate-400
-                  outline-none
-                  transition-all duration-300
-                  focus:border-teal-400
-                  focus:ring-4
-                  focus:ring-teal-500/20
-                "
-                disabled={isLoading}
-                required
-              />
-
-              {/* Toggle Password */}
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
-                className="
-                  absolute
-                  right-4 top-1/2
-                  -translate-y-1/2
-                  text-slate-400
-                  hover:text-slate-600
-                  transition-all duration-300
                 "
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
-              </button>
+                Welcome Back
+              </h1>
+
+              <p
+                className="
+                  mt-3
+                  text-slate-500
+                  leading-relaxed
+                "
+              >
+                Silakan login menggunakan akun
+                yang telah terdaftar untuk
+                mengakses sistem alih media
+                arsip digital.
+              </p>
             </div>
-          </div>
 
-          {/* Remember Me */}
-          <div
-            className="
-              flex items-center
-              text-sm
-              text-slate-300
-            "
-          >
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="accent-teal-500"
-              />
-              Remember me
-            </label>
-          </div>
+            {/* ERROR */}
+            {error && (
+              <div
+                className="
+                  mt-6
+                  rounded-2xl
+                  border border-red-200
+                  bg-red-50
+                  px-4 py-3
+                  text-sm
+                  text-red-600
+                "
+              >
+                {error}
+              </div>
+            )}
 
-          {/* Submit Button */}
-          <motion.button
-            whileTap={{
-              scale: 0.98,
-            }}
-            whileHover={{
-              scale: 1.01,
-            }}
-            type="submit"
-            disabled={isLoading}
-            className={`
-              w-full
-              rounded-2xl
-              bg-gradient-to-r
-              from-teal-500
-              to-cyan-500
-              py-4
-              font-semibold
-              text-white
-              shadow-xl
-              shadow-teal-500/30
-              transition-all duration-300
-              ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-95'}
-            `}
-          >
-            {isLoading ? 'Menghubungkan...' : 'Masuk ke Sistem'}
-          </motion.button>
-        </form>
+            {/* FORM */}
+            <form
+              onSubmit={handleLogin}
+              className="mt-10 space-y-6"
+            >
+              {/* USERNAME */}
+              <div>
+                <label
+                  className="
+                    block mb-2
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                  "
+                >
+                  Username
+                </label>
 
-        {/* Footer */}
-        <div
-          className="
-            mt-8
-            border-t border-white/10
-            pt-5
-            text-center
-          "
-        >
-          <p
-            className="
-              text-xs
-              text-slate-400
-              leading-relaxed
-            "
-          >
-            © 2026 SAMA-BANTEN
-            <br />
-            Digital Archive Management System
-          </p>
+                <div className="relative">
+                  <User2
+                    size={18}
+                    className="
+                      absolute
+                      left-4 top-1/2
+                      -translate-y-1/2
+                      text-slate-400
+                    "
+                  />
+
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Masukkan username"
+                    required
+                    className="
+                      w-full
+                      h-14
+                      rounded-2xl
+                      border border-slate-200
+                      bg-slate-50
+                      pl-12 pr-4
+                      text-slate-800
+                      outline-none
+                      transition-all duration-300
+                      focus:border-cyan-500
+                      focus:ring-0
+                    "
+                  />
+                </div>
+              </div>
+
+              {/* PASSWORD */}
+              <div>
+                <label
+                  className="
+                    block mb-2
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                  "
+                >
+                  Password
+                </label>
+
+                <div className="relative">
+                  <LockKeyhole
+                    size={18}
+                    className="
+                      absolute
+                      left-4 top-1/2
+                      -translate-y-1/2
+                      text-slate-400
+                    "
+                  />
+
+                  <input
+                    type={
+                      showPassword
+                        ? 'text'
+                        : 'password'
+                    }
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Masukkan password"
+                    required
+                    className="
+                      w-full
+                      h-14
+                      rounded-2xl
+                      border border-slate-200
+                      bg-slate-50
+                      pl-12 pr-12
+                      text-slate-800
+                      outline-none
+                      transition-all duration-300
+                      focus:border-cyan-500
+                      focus:ring-0
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(
+                        !showPassword
+                      )
+                    }
+                    className="
+                      absolute
+                      right-4 top-1/2
+                      -translate-y-1/2
+                      text-slate-400
+                      hover:text-slate-700
+                    "
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* REMEMBER */}
+              <div
+                className="
+                  flex items-center
+                  justify-between
+                  text-sm
+                "
+              >
+                <label
+                  className="
+                    flex items-center gap-2
+                    text-slate-600
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    className="accent-cyan-500"
+                  />
+
+                  Remember me
+                </label>
+              </div>
+
+              {/* BUTTON */}
+              <motion.button
+                whileHover={{
+                  scale: 1.01,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
+                type="submit"
+                disabled={isLoading}
+                className={`
+                  w-full
+                  h-14
+                  rounded-2xl
+                  bg-gradient-to-r
+                  from-teal-500
+                  to-cyan-500
+                  text-white
+                  font-semibold
+                  text-lg
+                  shadow-lg
+                  shadow-cyan-500/20
+                  transition-all duration-300
+
+                  ${
+                    isLoading
+                      ? 'opacity-70 cursor-not-allowed'
+                      : 'hover:opacity-95'
+                  }
+                `}
+              >
+                {isLoading
+                  ? 'Menghubungkan...'
+                  : 'Masuk ke Sistem'}
+              </motion.button>
+            </form>
+          </motion.div>
         </div>
       </motion.div>
     </div>

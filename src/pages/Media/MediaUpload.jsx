@@ -1,407 +1,586 @@
 import { useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { motion } from 'framer-motion';
+
 import {
   Upload,
   FileText,
   ScanLine,
-  Save,
+  Sparkles,
+  CheckCircle2,
+  FileImage,
+  ChevronRight,
+  ShieldCheck,
+  Files,
+  Activity,
+  Clock3,
+  FileCheck2,
 } from 'lucide-react';
 
 export default function MediaUpload() {
-  const [formData, setFormData] = useState({
-    box_id: '',
-    folder_id: '', // Ditambahkan sesuai endpoint API
-    nama_dokumen: '',
-    kode_klasifikasi: '',
-    tanggal_arsip: '',
-    no_arsip: '',
-    keterangan: '',
-    jumlah_halaman: '',
-    ocr_result: '',
-  });
-
   const [file, setFile] = useState(null);
-
-  const [status, setStatus] = useState({
-    type: '',
-    message: '',
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  // Fungsi helper untuk mengubah format tanggal dari YYYY-MM-DD menjadi DD-MM-YYYY
-  const formatDateForApi = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}-${month}-${year}`;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setLoading(true);
-
-    setStatus({
-      type: '',
-      message: '',
-    });
-
-    const data = new FormData();
-
-    // Memasukkan data ke FormData secara eksplisit agar box_id & folder_id tidak ikut terkirim ke body
-    data.append('nama_dokumen', formData.nama_dokumen);
-    data.append('kode_klasifikasi', formData.kode_klasifikasi);
-    data.append('tanggal_arsip', formatDateForApi(formData.tanggal_arsip)); // Format disesuaikan
-    data.append('no_arsip', formData.no_arsip);
-    data.append('keterangan', formData.keterangan);
-    data.append('jumlah_halaman', formData.jumlah_halaman);
-    data.append('ocr_result', formData.ocr_result);
-
-    if (file) {
-      data.append('file', file);
-    }
-
-    // FIXED: Mengubah key pengambilan token dari 'token_operator' menjadi 'token'
-    // agar sinkron dengan useAuthStore dan kode Login yang baru
-    const token = localStorage.getItem('token');
-
-    try {
-      // Endpoint disesuaikan dengan koleksi Restfox: /alih-media/box/{box_id}/folder/{folder_id}/dokumen
-      await axiosInstance.post(
-        `/alih-media/box/${formData.box_id}/folder/${formData.folder_id}/dokumen`,
-        data,
-        {
-          // Tambahkan header Authorization Bearer bersama dengan multipart/form-data
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`, // Memasukkan token yang sudah sinkron
-          },
-        }
-      );
-
-      setStatus({
-        type: 'success',
-        message: 'Dokumen berhasil diunggah dan di-index!',
-      });
-
-      setFormData({
-        box_id: '',
-        folder_id: '', // Reset folder_id juga
-        nama_dokumen: '',
-        kode_klasifikasi: '',
-        tanggal_arsip: '',
-        no_arsip: '',
-        keterangan: '',
-        jumlah_halaman: '',
-        ocr_result: '',
-      });
-
-      setFile(null);
-      
-      // Reset input file secara manual
-      if (e.target.elements.file) {
-        e.target.elements.file.value = null;
-      }
-
-    } catch (err) {
-      setStatus({
-        type: 'error',
-        message:
-          err.response?.data?.message ||
-          'Gagal mengunggah dokumen. Silakan periksa kembali session/token Anda.',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
       className="space-y-6"
     >
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-800">
-          Upload & Indexing Arsip
-        </h1>
+      {/* HERO */}
+      <div
+        className="
+          relative overflow-hidden
+          rounded-[32px]
+          bg-gradient-to-br
+          from-[#071739]
+          via-[#0B2B70]
+          to-[#0EA5A4]
+          p-8
+          text-white
+        "
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl" />
 
-        <p className="text-slate-500 mt-2">
-          Proses digitalisasi dokumen fisik ke sistem SAMA-BANTEN
-        </p>
-      </div>
-
-      {/* Alert */}
-      {status.message && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className={`p-4 rounded-2xl border text-sm font-medium
-          ${
-            status.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-              : 'bg-red-50 border-red-200 text-red-700'
-          }`}
-        >
-          {status.message}
-        </motion.div>
-      )}
-
-      {/* Form Card */}
-      <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 lg:p-8">
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-8"
-        >
-          {/* Section */}
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl">
-                <FileText size={22} />
+        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-8">
+          {/* LEFT */}
+          <div className="max-w-2xl">
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 backdrop-blur-md px-4 py-2 rounded-full text-sm">
+                <Sparkles size={16} />
+                Digitalisasi Arsip
               </div>
 
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">
-                  Informasi Arsip
-                </h2>
-
-                <p className="text-sm text-slate-500">
-                  Lengkapi metadata dokumen
-                </p>
+              <div className="inline-flex items-center gap-2 bg-emerald-400/20 border border-emerald-300/20 backdrop-blur-md px-4 py-2 rounded-full text-sm">
+                <CheckCircle2 size={16} />
+                OCR READY
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Box ID */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  ID Boks Kontainer
-                </label>
+            <h1 className="text-4xl font-bold leading-tight">
+              Upload Dokumen Arsip
+            </h1>
 
-                <input
-                  type="text"
-                  name="box_id"
-                  value={formData.box_id}
-                  onChange={handleInputChange}
-                  placeholder="Contoh: 4"
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
+            <p className="mt-4 text-slate-200 leading-relaxed text-lg">
+              Upload hasil scan arsip fisik ke dalam sistem digital untuk
+              proses OCR, indexing, dan quality control.
+            </p>
+
+            {/* Info */}
+            <div className="mt-7 flex flex-wrap gap-4">
+              <div className="bg-white/10 border border-white/10 backdrop-blur-md px-5 py-3 rounded-2xl">
+                <p className="text-xs text-slate-300">
+                  Upload Session
+                </p>
+
+                <h3 className="font-bold mt-1">
+                  UPS-2026-00021
+                </h3>
               </div>
 
-              {/* Folder ID */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  ID Folder
-                </label>
+              <div className="bg-white/10 border border-white/10 backdrop-blur-md px-5 py-3 rounded-2xl">
+                <p className="text-xs text-slate-300">
+                  Last Upload
+                </p>
 
-                <input
-                  type="text"
-                  name="folder_id"
-                  value={formData.folder_id}
-                  onChange={handleInputChange}
-                  placeholder="Contoh: 3"
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
-              </div>
-
-              {/* No Arsip */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Nomor Arsip
-                </label>
-
-                <input
-                  type="text"
-                  name="no_arsip"
-                  value={formData.no_arsip}
-                  onChange={handleInputChange}
-                  placeholder="Contoh: 123_ARSIP"
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
-              </div>
-
-              {/* Nama Dokumen */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Nama Dokumen
-                </label>
-
-                <input
-                  type="text"
-                  name="nama_dokumen"
-                  value={formData.nama_dokumen}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan nama dokumen"
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
-              </div>
-
-              {/* Kode */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Kode Klasifikasi
-                </label>
-
-                <input
-                  type="text"
-                  name="kode_klasifikasi"
-                  value={formData.kode_klasifikasi}
-                  onChange={handleInputChange}
-                  placeholder="Contoh: KD-125"
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
-              </div>
-
-              {/* Tanggal */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Tanggal Arsip
-                </label>
-
-                <input
-                  type="date"
-                  name="tanggal_arsip"
-                  value={formData.tanggal_arsip}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
-              </div>
-
-              {/* Jumlah Halaman */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Jumlah Halaman
-                </label>
-
-                <input
-                  type="number"
-                  name="jumlah_halaman"
-                  value={formData.jumlah_halaman}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan jumlah halaman"
-                  className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
-                  required
-                />
+                <h3 className="font-bold mt-1">
+                  08 Mei 2026 • 15:01 WIB
+                </h3>
               </div>
             </div>
           </div>
 
-          {/* Upload */}
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-violet-100 text-violet-600 p-3 rounded-2xl">
-                <Upload size={22} />
+          {/* RIGHT */}
+          <div className="grid grid-cols-2 gap-4 min-w-[300px]">
+            {[
+              {
+                title: 'Upload Hari Ini',
+                value: '48',
+              },
+              {
+                title: 'Pending QC',
+                value: '16',
+              },
+              {
+                title: 'OCR Success',
+                value: '91%',
+              },
+              {
+                title: 'Storage',
+                value: '68%',
+              },
+            ].map((item, index) => (
+              <div
+                key={index}
+                className="
+                  bg-white/10
+                  border border-white/10
+                  backdrop-blur-md
+                  rounded-3xl
+                  p-5
+                "
+              >
+                <p className="text-sm text-slate-300">
+                  {item.title}
+                </p>
+
+                <h2 className="text-3xl font-bold mt-3">
+                  {item.value}
+                </h2>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* LEFT */}
+        <div className="xl:col-span-2 space-y-6">
+          {/* UPLOAD */}
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="p-7 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div
+                  className="
+                    w-14 h-14
+                    rounded-3xl
+                    bg-gradient-to-br
+                    from-violet-500
+                    to-fuchsia-500
+                    flex items-center justify-center
+                    shadow-lg shadow-violet-500/20
+                  "
+                >
+                  <Upload className="text-white" />
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">
+                    Upload File Arsip
+                  </h2>
+
+                  <p className="text-sm text-slate-500 mt-1">
+                    Upload PDF, JPG, atau PNG hasil digitalisasi.
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">
-                  File Dokumen
-                </h2>
-
-                <p className="text-sm text-slate-500">
-                  Upload hasil scan PDF atau gambar
-                </p>
+              <div className="hidden md:flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl text-sm font-semibold">
+                <ShieldCheck size={18} />
+                Sistem Aktif
               </div>
             </div>
 
-            <label className="border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-3xl p-8 flex flex-col items-center justify-center text-center transition cursor-pointer bg-slate-50">
-              <Upload
-                className="text-slate-400 mb-4"
-                size={42}
-              />
+            {/* Body */}
+            <div className="p-7 space-y-6">
+              {/* Dropzone */}
+              <label
+                className="
+                  relative
+                  border-2 border-dashed border-slate-300
+                  hover:border-cyan-500
+                  hover:shadow-xl hover:shadow-cyan-500/10
+                  hover:scale-[1.01]
+                  bg-slate-50
+                  rounded-[32px]
+                  p-12
+                  flex flex-col items-center justify-center
+                  text-center
+                  cursor-pointer
+                  transition-all duration-300
+                  overflow-hidden
+                "
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 to-transparent opacity-0 hover:opacity-100 transition" />
 
-              <h3 className="font-semibold text-slate-700">
-                Klik untuk upload file
-              </h3>
+                <div className="relative z-10">
+                  <motion.div
+                    animate={{
+                      y: [0, -6, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                    className="
+                      w-24 h-24
+                      rounded-[28px]
+                      bg-gradient-to-br
+                      from-cyan-500
+                      to-teal-500
+                      flex items-center justify-center
+                      mx-auto
+                      shadow-2xl shadow-cyan-500/20
+                    "
+                  >
+                    <FileImage
+                      size={42}
+                      className="text-white"
+                    />
+                  </motion.div>
 
-              <p className="text-sm text-slate-500 mt-1">
-                PDF, JPG, PNG
-              </p>
+                  <h3 className="mt-6 text-2xl font-bold text-slate-800">
+                    Drag & Drop File
+                  </h3>
 
-              <input
-                type="file"
-                name="file"
-                id="file"
-                onChange={handleFileChange}
-                className="hidden"
-                required
-              />
-            </label>
+                  <p className="mt-2 text-slate-500">
+                    atau klik untuk memilih file
+                  </p>
 
-            {file && (
-              <div className="mt-4 bg-slate-100 rounded-2xl p-4 text-sm text-slate-700">
-                File dipilih:
-                <span className="font-semibold ml-2">
-                  {file.name}
-                </span>
+                  <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+                    {['PDF', 'JPG', 'PNG', 'DOCX'].map((item) => (
+                      <div
+                        key={item}
+                        className="
+                          bg-slate-900
+                          text-white
+                          px-4 py-2
+                          rounded-xl
+                          text-xs
+                          font-semibold
+                        "
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-6 py-3 rounded-2xl shadow-lg shadow-cyan-500/20">
+                    <Files size={18} />
+                    Pilih File
+                  </div>
+                </div>
+
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+
+              {/* File Info */}
+              {file && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-[28px] p-5">
+                  <div className="flex items-center justify-between gap-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-3xl bg-emerald-500 flex items-center justify-center">
+                        <FileText className="text-white" />
+                      </div>
+
+                      <div>
+                        <h3 className="font-bold text-slate-800 text-lg">
+                          {file.name}
+                        </h3>
+
+                        <p className="text-sm text-slate-500 mt-1">
+                          File berhasil dipilih dan siap diupload
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-600 px-4 py-2 rounded-2xl text-sm font-semibold">
+                      <CheckCircle2 size={18} />
+                      Ready
+                    </div>
+                  </div>
+
+                  {/* Progress */}
+                  <div className="mt-5">
+                    <div className="flex justify-between mb-2 text-sm">
+                      <span className="text-slate-600">
+                        Upload Progress
+                      </span>
+
+                      <span className="font-semibold text-slate-800">
+                        78%
+                      </span>
+                    </div>
+
+                    <div className="w-full h-3 bg-emerald-100 rounded-full overflow-hidden">
+                      <div className="w-[78%] h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-slate-700">
+                    Nama Dokumen
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="Masukkan nama dokumen"
+                    className="
+                      w-full
+                      rounded-2xl
+                      border border-slate-200
+                      bg-slate-50
+                      px-4 py-3.5
+                      outline-none
+                      focus:ring-4
+                      focus:ring-cyan-100
+                      focus:border-cyan-500
+                      transition
+                    "
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-slate-700">
+                    Kode Klasifikasi
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="KD-2026"
+                    className="
+                      w-full
+                      rounded-2xl
+                      border border-slate-200
+                      bg-slate-50
+                      px-4 py-3.5
+                      outline-none
+                      focus:ring-4
+                      focus:ring-cyan-100
+                      focus:border-cyan-500
+                      transition
+                    "
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-slate-700">
+                    Jumlah Halaman
+                  </label>
+
+                  <input
+                    type="number"
+                    placeholder="0"
+                    className="
+                      w-full
+                      rounded-2xl
+                      border border-slate-200
+                      bg-slate-50
+                      px-4 py-3.5
+                      outline-none
+                      focus:ring-4
+                      focus:ring-cyan-100
+                      focus:border-cyan-500
+                      transition
+                    "
+                  />
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* OCR */}
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-emerald-100 text-emerald-600 p-3 rounded-2xl">
-                <ScanLine size={22} />
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-7 border-b border-slate-100 flex items-center gap-4">
+              <div
+                className="
+                  w-14 h-14
+                  rounded-3xl
+                  bg-gradient-to-br
+                  from-emerald-500
+                  to-teal-500
+                  flex items-center justify-center
+                  shadow-lg shadow-emerald-500/20
+                "
+              >
+                <ScanLine className="text-white" />
               </div>
 
               <div>
-                <h2 className="text-xl font-bold text-slate-800">
-                  Hasil OCR
+                <h2 className="text-2xl font-bold text-slate-800">
+                  OCR Result
                 </h2>
 
-                <p className="text-sm text-slate-500">
-                  Ekstraksi teks otomatis dokumen
+                <p className="text-sm text-slate-500 mt-1">
+                  Hasil ekstraksi teks otomatis dari dokumen.
                 </p>
               </div>
             </div>
 
-            <textarea
-              name="ocr_result"
-              value={formData.ocr_result}
-              onChange={handleInputChange}
-              rows="6"
-              placeholder="Isi hasil OCR..."
-              className="w-full border border-slate-300 rounded-3xl px-4 py-4 outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition font-mono text-sm"
-            />
+            <div className="p-7">
+              <textarea
+                rows="8"
+                placeholder="Hasil OCR akan tampil di sini..."
+                className="
+                  w-full
+                  rounded-[28px]
+                  border border-slate-200
+                  bg-slate-50
+                  px-5 py-5
+                  outline-none
+                  focus:ring-4
+                  focus:ring-cyan-100
+                  focus:border-cyan-500
+                  transition
+                  resize-none
+                  text-sm
+                  font-mono
+                "
+              />
+
+              <div className="flex justify-end mt-6">
+                <button
+                  className="
+                    flex items-center gap-2
+                    bg-gradient-to-r
+                    from-teal-500
+                    to-cyan-500
+                    hover:opacity-90
+                    transition
+                    text-white
+                    px-6 py-3
+                    rounded-2xl
+                    shadow-lg shadow-cyan-500/20
+                    font-medium
+                  "
+                >
+                  Simpan Upload
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="space-y-6">
+          {/* OCR Status */}
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+                <Activity size={20} />
+              </div>
+
+              <div>
+                <h3 className="font-bold text-slate-800">
+                  OCR Status
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Monitoring proses OCR
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                'Ready to Upload',
+                'OCR Processing',
+                'Indexing Metadata',
+                'Waiting Quality Control',
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="
+                    flex items-center gap-3
+                    bg-slate-50
+                    border border-slate-100
+                    rounded-2xl
+                    px-4 py-4
+                  "
+                >
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+
+                  <span className="font-medium text-slate-700">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Button */}
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            disabled={loading}
-            type="submit"
-            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-4 rounded-2xl transition-all duration-300 shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2 disabled:bg-slate-400"
-          >
-            <Save size={20} />
+          {/* Recent Upload */}
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center">
+                <FileCheck2 size={20} />
+              </div>
 
-            {loading
-              ? 'Sedang Memproses...'
-              : 'Simpan & Upload Dokumen'}
-          </motion.button>
-        </form>
+              <div>
+                <h3 className="font-bold text-slate-800">
+                  Recent Upload
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  File terbaru yang diupload
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                'surat_keputusan_2026.pdf',
+                'berita_acara_scan.png',
+                'arsip_dinas_pendidikan.pdf',
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="
+                    flex items-center justify-between
+                    bg-slate-50
+                    border border-slate-100
+                    rounded-2xl
+                    px-4 py-4
+                  "
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+                      <FileText size={18} />
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium text-slate-700 text-sm">
+                        {item}
+                      </h4>
+
+                      <p className="text-xs text-slate-400 mt-1">
+                        Uploaded Successfully
+                      </p>
+                    </div>
+                  </div>
+
+                  <CheckCircle2
+                    size={18}
+                    className="text-emerald-500"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div className="bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-[32px] p-6 text-white relative overflow-hidden">
+            <div className="absolute right-[-40px] bottom-[-40px] w-40 h-40 rounded-full bg-white/10 blur-2xl" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <Clock3 />
+
+                <h3 className="text-xl font-bold">
+                  Gunakan Scan Berkualitas
+                </h3>
+              </div>
+
+              <p className="text-violet-100 leading-relaxed">
+                Dokumen yang jelas dan tidak blur akan meningkatkan akurasi OCR
+                serta mempercepat proses indexing digital.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

@@ -11,13 +11,14 @@ import {
   Trash2,
   LogOut,
   Shield,
-  Menu,
   X,
+  Database, // Ditambahkan untuk ikon Master Data
 } from 'lucide-react';
 
 import {
   NavLink,
   useNavigate,
+  useLocation,
 } from 'react-router-dom';
 
 import {
@@ -32,13 +33,9 @@ export default function Sidebar({
   setMobileOpen,
 }) {
   const navigate = useNavigate();
-
-  const logout = useAuthStore(
-    (state) => state.logout
-  );
-
-  const [openMenu, setOpenMenu] =
-    useState('alih-media');
+  const location = useLocation();
+  const logout = useAuthStore((state) => state.logout);
+  const [openMenu, setOpenMenu] = useState(null);
 
   const menus = [
     {
@@ -46,21 +43,18 @@ export default function Sidebar({
       icon: LayoutDashboard,
       path: '/dashboard',
     },
-
     {
       title: 'Alih Media',
       icon: FolderOpen,
       key: 'alih-media',
-
       children: [
+        {
+          title: 'Registrasi Box',
+          path: '/alih-media/registrasi-box',
+        },
         {
           title: 'Upload',
           path: '/alih-media/upload',
-        },
-        {
-          title: 'Registrasi Box',
-          path:
-            '/alih-media/registrasi-box',
         },
         {
           title: 'Indexing',
@@ -68,28 +62,39 @@ export default function Sidebar({
         },
         {
           title: 'Berita Acara',
-          path:
-            '/alih-media/berita-acara',
+          path: '/alih-media/berita-acara',
         },
         {
           title: 'Monitoring',
-          path:
-            '/alih-media/monitoring',
+          path: '/alih-media/monitoring',
         },
       ],
     },
-
     {
       title: 'Quality Control',
       icon: ShieldCheck,
       path: '/quality-control',
     },
-
+    /* ENGINE UPDATE: MASTER DATA SEBAGAI MENU UTAMA SENDIRI */
+    {
+      title: 'Master Data',
+      icon: Database,
+      key: 'master-data',
+      children: [
+        {
+          title: 'Data Instansi',
+          path: '/master/instansi', // Sesuai endpoint pagination backend
+        },
+        {
+          title: 'Manajemen File',
+          path: '/master/manajemen-file', // Navigasi folder explorer & status folder
+        },
+      ],
+    },
     {
       title: 'Arsip',
       icon: Archive,
       key: 'arsip',
-
       children: [
         {
           title: 'Arsip Aktif',
@@ -109,31 +114,25 @@ export default function Sidebar({
         },
       ],
     },
-
     {
       title: 'Otorisasi',
       icon: Shield,
       key: 'otorisasi',
-
       children: [
         {
           title: 'Verifikasi Metadata',
-          path:
-            '/otorisasi/verifikasi',
+          path: '/otorisasi/verifikasi',
         },
         {
           title: 'Watermarking',
-          path:
-            '/otorisasi/watermarking',
+          path: '/otorisasi/watermarking',
         },
       ],
     },
-
     {
       title: 'Penyusutan',
       icon: Trash2,
       key: 'penyusutan',
-
       children: [
         {
           title: 'JRA',
@@ -145,22 +144,18 @@ export default function Sidebar({
         },
         {
           title: 'Pemusnahan',
-          path:
-            '/penyusutan/pemusnahan',
+          path: '/penyusutan/pemusnahan',
         },
         {
           title: 'Arsip Statis',
-          path:
-            '/penyusutan/statis',
+          path: '/penyusutan/statis',
         },
       ],
     },
-
     {
       title: 'Laporan',
       icon: FileBarChart2,
       key: 'laporan',
-
       children: [
         {
           title: 'Rekap Laporan',
@@ -176,95 +171,49 @@ export default function Sidebar({
         },
       ],
     },
-
     {
       title: 'Pengaturan',
       icon: Settings,
       key: 'pengaturan',
-
       children: [
         {
           title: 'User Management',
           path: '/pengaturan/user',
         },
         {
-          title: 'Master Data',
-          path:
-            '/pengaturan/master-data',
-        },
-        {
           title: 'Custom Metadata',
-          path:
-            '/pengaturan/metadata',
+          path: '/pengaturan/metadata',
         },
         {
           title: 'Maintenance',
-          path:
-            '/pengaturan/maintenance',
+          path: '/pengaturan/maintenance',
         },
       ],
     },
   ];
 
   const SidebarContent = () => (
-    <div
-      className="
-        flex flex-col
-        h-full
-        bg-[#071739]
-        text-white
-      "
-    >
-      {/* Logo */}
-      <div
-        className="
-          px-6 py-8
-          border-b border-white/10
-        "
-      >
-        <h1
-          className="
-            text-3xl
-            font-bold
-            text-teal-400
-          "
-        >
-          SAMA-BANTEN
-        </h1>
-
-        <p
-          className="
-            text-sm
-            text-slate-300
-            mt-2
-            leading-relaxed
-          "
-        >
+    <div className="flex flex-col h-full bg-[#071739] text-white">
+      {/* LOGO */}
+      <div className="px-6 py-8 border-b border-white/10">
+        <h1 className="text-3xl font-bold text-teal-400">SAMA-BANTEN</h1>
+        <p className="text-sm text-slate-300 mt-2 leading-relaxed">
           Sistem Alih Media Arsip Banten
         </p>
       </div>
 
-      {/* Menu */}
-      <div
-        className="
-          flex-1
-          overflow-y-auto
-          px-4 py-5
-          space-y-2
-        "
-      >
+      {/* MENU */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-2">
         {menus.map((menu, index) => {
           const Icon = menu.icon;
 
-          // Menu biasa
+          /* MENU BIASA */
           if (!menu.children) {
             return (
               <NavLink
                 key={index}
                 to={menu.path}
-                onClick={() =>
-                  setMobileOpen(false)
-                }
+                onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
                   `
                   flex items-center gap-3
@@ -272,32 +221,25 @@ export default function Sidebar({
                   rounded-2xl
                   transition-all duration-300
                   font-medium
-
-                  ${
-                    isActive
-                      ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/20'
-                      : 'text-slate-200 hover:bg-white/5'
+                  ${isActive
+                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/20'
+                    : 'text-slate-200 hover:bg-white/5'
                   }
                 `
                 }
               >
                 <Icon size={20} />
-
                 <span>{menu.title}</span>
               </NavLink>
             );
           }
 
-          // Dropdown
+          /* DROPDOWN */
           return (
             <div key={index}>
               <button
                 onClick={() =>
-                  setOpenMenu(
-                    openMenu === menu.key
-                      ? null
-                      : menu.key
-                  )
+                  setOpenMenu(openMenu === menu.key ? null : menu.key)
                 }
                 className="
                   w-full
@@ -311,21 +253,14 @@ export default function Sidebar({
               >
                 <div className="flex items-center gap-3">
                   <Icon size={20} />
-
-                  <span className="font-medium">
-                    {menu.title}
-                  </span>
+                  <span className="font-medium">{menu.title}</span>
                 </div>
 
                 <ChevronDown
                   size={18}
                   className={`
                     transition-transform duration-300
-                    ${
-                      openMenu === menu.key
-                        ? 'rotate-180'
-                        : ''
-                    }
+                    ${openMenu === menu.key ? 'rotate-180' : ''}
                   `}
                 />
               </button>
@@ -333,18 +268,9 @@ export default function Sidebar({
               <AnimatePresence>
                 {openMenu === menu.key && (
                   <motion.div
-                    initial={{
-                      opacity: 0,
-                      height: 0,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      height: 'auto',
-                    }}
-                    exit={{
-                      opacity: 0,
-                      height: 0,
-                    }}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
                     className="
                       ml-5
                       mt-2
@@ -354,51 +280,37 @@ export default function Sidebar({
                       overflow-hidden
                     "
                   >
-                    {menu.children.map(
-                      (sub, subIndex) => (
-                        <NavLink
-                          key={subIndex}
-                          to={sub.path}
-                          onClick={() =>
-                            setMobileOpen(
-                              false
-                            )
-                          }
-                          className={({
-                            isActive,
-                          }) =>
-                            `
+                    {menu.children.map((sub, subIndex) => (
+                      <NavLink
+                        key={subIndex}
+                        to={sub.path}
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) =>
+                          `
                             flex items-center gap-3
                             px-4 py-3
                             rounded-xl
                             text-sm
                             transition-all duration-300
-
-                            ${
-                              isActive
-                                ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/20'
-                                : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                            }
-                          `
+                            ${isActive
+                            ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/20'
+                            : 'text-slate-300 hover:bg-white/5 hover:text-white'
                           }
-                        >
-                          <div
-                            className={`
-                              w-2 h-2 rounded-full
-
-                              ${
-                                location.pathname ===
-                                sub.path
-                                  ? 'bg-cyan-400'
-                                  : 'bg-slate-500'
-                              }
-                            `}
-                          />
-
-                          {sub.title}
-                        </NavLink>
-                      )
-                    )}
+                          `
+                        }
+                      >
+                        <div
+                          className={`
+                            w-2 h-2 rounded-full
+                            ${location.pathname === sub.path
+                              ? 'bg-cyan-400'
+                              : 'bg-slate-500'
+                            }
+                          `}
+                        />
+                        {sub.title}
+                      </NavLink>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -407,17 +319,11 @@ export default function Sidebar({
         })}
       </div>
 
-      {/* Logout */}
-      <div
-        className="
-          p-4
-          border-t border-white/10
-        "
-      >
+      {/* LOGOUT */}
+      <div className="p-4 border-t border-white/10">
         <button
           onClick={() => {
             logout();
-
             navigate('/login');
           }}
           className="
@@ -435,7 +341,6 @@ export default function Sidebar({
           "
         >
           <LogOut size={18} />
-
           Keluar Sistem
         </button>
       </div>
@@ -444,55 +349,8 @@ export default function Sidebar({
 
   return (
     <>
-      {/* MOBILE TOPBAR */}
-      <div
-        className="
-          xl:hidden
-          fixed top-0 left-0 right-0
-          z-40
-          h-16
-          bg-white
-          border-b border-slate-200
-          flex items-center justify-between
-          px-4
-        "
-      >
-        <button
-          onClick={() =>
-            setMobileOpen(true)
-          }
-          className="
-            p-2 rounded-xl
-            hover:bg-slate-100
-          "
-        >
-          <Menu size={24} />
-        </button>
-
-        <h1
-          className="
-            text-lg
-            font-bold
-            text-[#071739]
-          "
-        >
-          SAMA-BANTEN
-        </h1>
-
-        <div className="w-10" />
-      </div>
-
-      {/* DESKTOP */}
-      <aside
-        className="
-          hidden xl:flex
-          fixed left-0 top-0
-          w-72
-          h-screen
-          z-40
-          shadow-2xl
-        "
-      >
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden xl:flex fixed left-0 top-0 w-72 h-screen z-40 shadow-2xl">
         <SidebarContent />
       </aside>
 
@@ -500,69 +358,30 @@ export default function Sidebar({
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Overlay */}
+            {/* OVERLAY */}
             <motion.div
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              onClick={() =>
-                setMobileOpen(false)
-              }
-              className="
-                fixed inset-0
-                bg-black/50
-                z-40
-                xl:hidden
-              "
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-black/50 z-40 xl:hidden"
             />
 
-            {/* Sidebar */}
+            {/* SIDEBAR */}
             <motion.div
-              initial={{
-                x: -320,
-              }}
-              animate={{
-                x: 0,
-              }}
-              exit={{
-                x: -320,
-              }}
-              transition={{
-                duration: 0.3,
-              }}
-              className="
-                fixed top-0 left-0
-                w-72
-                h-screen
-                z-50
-                shadow-2xl
-                xl:hidden
-              "
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{ duration: 0.3 }}
+              className="fixed top-0 left-0 w-72 h-screen z-50 shadow-2xl xl:hidden"
             >
-              {/* Close */}
+              {/* CLOSE BUTTON */}
               <button
-                onClick={() =>
-                  setMobileOpen(false)
-                }
-                className="
-                  absolute top-4 right-4
-                  z-50
-                  p-2
-                  rounded-xl
-                  bg-white/10
-                  hover:bg-white/20
-                  text-white
-                "
+                onClick={() => setMobileOpen(false)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white"
               >
                 <X size={20} />
               </button>
-
               <SidebarContent />
             </motion.div>
           </>
